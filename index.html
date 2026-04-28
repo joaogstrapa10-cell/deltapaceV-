@@ -3,315 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DELTAPACE | SNIPER v2</title>
+    <title>DELTAPACE | SNIPER v2.1</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --neon-yellow: #F2FF00;
-            --danger: #FF3E3E;
-            --bg: #000000;
-            --surface: #111111;
-        }
-
+        :root { --neon: #F2FF00; --danger: #FF3E3E; --bg: #000; --surface: #111; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            background-color: var(--bg);
-            color: var(--neon-yellow);
-            font-family: 'JetBrains Mono', monospace;
-            overflow-x: hidden;
-            text-transform: uppercase;
+        body { background: var(--bg); color: var(--neon); font-family: 'JetBrains Mono', monospace; text-transform: uppercase; overflow: hidden; }
+        
+        /* ANIMAÇÃO DE PULSO PARA O DELTA ATRASADO */
+        @keyframes pulse-danger {
+            0% { box-shadow: inset 0 0 0px var(--danger); }
+            50% { box-shadow: inset 0 0 50px var(--danger); }
+            100% { box-shadow: inset 0 0 0px var(--danger); }
         }
+        .critical-delay { animation: pulse-danger 1s infinite; }
 
-        /* --- LOBBY / CONFIGURAÇÃO --- */
-        #lobby {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
+        #lobby, #hud { padding: 20px; display: flex; flex-direction: column; height: 100vh; }
+        .input-group { background: var(--surface); padding: 15px; margin-bottom: 10px; border-radius: 4px; }
+        input { width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--neon); color: #fff; font-size: 1.5rem; outline: none; font-family: inherit; }
+        
+        .delta-container { text-align: center; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
+        #delta-value { font-size: 6rem; font-weight: 700; line-height: 1; }
+        
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .stat-card { background: var(--surface); padding: 12px; text-align: center; }
+        .stat-value { font-size: 1.5rem; color: #fff; display: block; }
+        .stat-label { font-size: 0.6rem; opacity: 0.7; }
 
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 2px solid var(--neon-yellow);
-            padding-bottom: 10px;
-        }
-
-        .input-group {
-            background: var(--surface);
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 4px;
-        }
-
-        label { display: block; font-size: 0.8rem; margin-bottom: 8px; opacity: 0.8; }
-
-        input {
-            width: 100%;
-            background: transparent;
-            border: none;
-            border-bottom: 1px solid var(--neon-yellow);
-            color: white;
-            font-size: 1.5rem;
-            font-family: 'JetBrains Mono', monospace;
-            padding: 5px;
-            outline: none;
-        }
-
-        .rampa-info {
-            font-size: 0.7rem;
-            margin-top: 10px;
-            color: #888;
-        }
-
-        .btn-start {
-            margin-top: auto;
-            background: var(--neon-yellow);
-            color: black;
-            border: none;
-            padding: 20px;
-            font-weight: bold;
-            font-size: 1.2rem;
-            cursor: pointer;
-            border-radius: 4px;
-        }
-
-        /* --- HUD DE PILOTAGEM --- */
-        #hud {
-            display: none;
-            padding: 15px;
-            height: 100vh;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .delta-container {
-            text-align: center;
-            padding: 20px 0;
-        }
-
-        #delta-value {
-            font-size: 5rem;
-            font-weight: 700;
-        }
-
-        .delta-label { font-size: 1rem; }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .stat-card {
-            background: var(--surface);
-            padding: 15px;
-            text-align: center;
-        }
-
-        .stat-value { font-size: 1.8rem; display: block; color: white; }
-        .stat-label { font-size: 0.7rem; opacity: 0.7; }
-
-        .progress-bar-bg {
-            background: #222;
-            height: 10px;
-            margin: 20px 0;
-        }
-
-        #progress-bar-fill {
-            background: var(--neon-yellow);
-            height: 100%;
-            width: 0%;
-            transition: width 0.3s;
-        }
-
-        .sim-btn {
-            background: #333;
-            color: white;
-            border: 1px solid #555;
-            padding: 10px;
-            font-size: 0.6rem;
-            margin-bottom: 10px;
-        }
-
-        .status-pill {
-            font-size: 0.6rem;
-            text-align: center;
-            padding: 5px;
-            background: #222;
-            border-radius: 10px;
-            margin-bottom: 5px;
-        }
+        .btn { border: none; padding: 18px; font-weight: bold; font-size: 1rem; border-radius: 4px; cursor: pointer; font-family: inherit; }
+        .btn-primary { background: var(--neon); color: #000; }
+        .btn-calib { background: #222; color: #fff; font-size: 0.7rem; padding: 10px; border: 1px solid #444; }
+        
+        .hud-footer { display: flex; flex-direction: column; gap: 10px; }
+        .gps-status { font-size: 0.5rem; text-align: center; opacity: 0.5; }
     </style>
 </head>
-<body>
+<body id="main-body">
 
     <div id="lobby">
-        <div class="header">
-            <h1>Deltapace Sniper</h1>
-            <p style="font-size: 0.6rem;">Precision Mission Planner v2.0</p>
-        </div>
-
-        <div class="input-group">
-            <label>Distância da Missão (km)</label>
-            <input type="number" id="targetDist" value="5.00" step="0.01">
-        </div>
-
-        <div class="input-group">
-            <label>Pace Médio Alvo (min/km)</label>
-            <input type="text" id="targetPace" value="05:00">
-        </div>
-
-        <div class="input-group">
-            <label>Rampa de Esforço (Negative Split)</label>
-            <input type="number" id="rampa" value="5" step="1">
-            <p class="rampa-info">Início +5% lento | Final -5% rápido</p>
-        </div>
-
-        <button class="btn-start" onclick="startMission()">INICIAR MISSÃO</button>
+        <h1 style="text-align:center; border-bottom:2px solid var(--neon); padding-bottom:10px; margin-bottom:20px;">SNIPER v2.1</h1>
+        <div class="input-group"><label style="font-size:0.7rem">DISTÂNCIA (KM)</label><input type="number" id="tDist" value="5.0"></div>
+        <div class="input-group"><label style="font-size:0.7rem">PACE ALVO (MIN/KM)</label><input type="text" id="tPace" value="05:00"></div>
+        <div class="input-group"><label style="font-size:0.7rem">RAMPA (%)</label><input type="number" id="tRampa" value="5"></div>
+        <button class="btn btn-primary" onclick="startMission()" style="margin-top:auto">TRAVAR ALVO & INICIAR</button>
     </div>
 
-    <div id="hud">
-        <div class="status-pill" id="gps-status">GPS: AGUARDANDO...</div>
-        
+    <div id="hud" style="display:none">
+        <div class="gps-status" id="gps-st">SINAL: PROCURANDO...</div>
         <div class="delta-container">
-            <div class="delta-label">DELTA (SEGUNDOS)</div>
-            <div id="delta-value">+00.0</div>
-            <div id="target-pace-live" style="font-size: 0.8rem;">ALVO ATUAL: --:--</div>
+            <div style="font-size:0.8rem">DELTA (SEG)</div>
+            <div id="delta-value">+0.0</div>
+            <div id="target-live" style="font-size:0.8rem; opacity:0.6">ALVO: --:--</div>
         </div>
-
-        <div class="progress-bar-bg">
-            <div id="progress-bar-fill"></div>
-        </div>
-
+        
         <div class="stats-grid">
-            <div class="stat-card">
-                <span class="stat-label">DISTÂNCIA</span>
-                <span class="stat-value" id="live-dist">0.00</span>
-                <span class="stat-label">KM</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-label">TEMPO</span>
-                <span class="stat-value" id="live-time">00:00</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-label">PACE ATUAL</span>
-                <span class="stat-value" id="live-pace">--:--</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-label">PROJEÇÃO</span>
-                <span class="stat-value" id="live-eta">--:--</span>
-            </div>
+            <div class="stat-card"><span class="stat-label">KM</span><span id="vDist" class="stat-value">0.00</span></div>
+            <div class="stat-card"><span class="stat-label">TEMPO</span><span id="vTime" class="stat-value">00:00</span></div>
+            <div class="stat-card"><span class="stat-label">PACE</span><span id="vPace" class="stat-value">--:--</span></div>
+            <div class="stat-card"><span class="stat-label">PROJ.</span><span id="vETA" class="stat-value">--:--</span></div>
         </div>
 
-        <button class="sim-btn" id="sim-toggle" onclick="toggleSimulation()">MODO SIMULAÇÃO: OFF</button>
-        <button class="btn-start" style="background: var(--danger); padding: 10px;" onclick="location.reload()">ABORTAR</button>
+        <div class="hud-footer">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <button class="btn btn-calib" onclick="adjDist(-0.1)">- 100M</button>
+                <button class="btn btn-calib" onclick="adjDist(0.1)">+ 100M</button>
+            </div>
+            <button class="btn btn-calib" id="sim-btn" onclick="toggleSim()">SIMULAR CORRIDA</button>
+            <button class="btn" style="background:#300; color:var(--danger); padding:10px" onclick="location.reload()">ABORTAR</button>
+        </div>
     </div>
 
     <script>
-        let missionActive = false;
-        let startTime;
-        let distance = 0;
-        let isSimulating = false;
-        let simInterval;
-        
-        // Dados da Missão
-        let mDist, mPaceSec, mRampa;
+        let mission = false, startT, dist = 0, isSim = false, wakeLock = null;
+        let mDist, mPace, mRampa;
 
-        function paceToSec(paceStr) {
-            let pts = paceStr.split(':');
-            return (parseInt(pts[0]) * 60) + parseInt(pts[1]);
-        }
-
-        function secToPace(sec) {
-            if (sec <= 0 || isNaN(sec)) return "--:--";
-            let m = Math.floor(sec / 60);
-            let s = Math.round(sec % 60);
-            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        // WAKE LOCK: Impede a tela de apagar
+        async function lockScreen() {
+            try { if ('wakeLock' in navigator) wakeLock = await navigator.requestWakeLock('screen'); } catch(e) {}
         }
 
         function startMission() {
-            mDist = parseFloat(document.getElementById('targetDist').value);
-            mPaceSec = paceToSec(document.getElementById('targetPace').value);
-            mRampa = parseFloat(document.getElementById('rampa').value) / 100;
+            mDist = parseFloat(document.getElementById('tDist').value);
+            mRampa = parseFloat(document.getElementById('tRampa').value) / 100;
+            let p = document.getElementById('tPace').value.split(':');
+            mPace = (parseInt(p[0]) * 60) + parseInt(p[1]);
 
             document.getElementById('lobby').style.display = 'none';
             document.getElementById('hud').style.display = 'flex';
-            
-            missionActive = true;
-            startTime = Date.now();
-            
-            initGPS();
-            updateLoop();
+            mission = true; startT = Date.now();
+            lockScreen();
+            update();
         }
 
-        function initGPS() {
-            if ("geolocation" in navigator) {
-                navigator.geolocation.watchPosition(pos => {
-                    if(!isSimulating) {
-                        // Lógica real de GPS aqui (simplificada para o exemplo)
-                        // Em uso real, você calcularia a distância entre coordenadas Haversine
-                        document.getElementById('gps-status').innerText = "GPS: ONLINE";
-                    }
-                }, err => {
-                    document.getElementById('gps-status').innerText = "GPS: ERRO";
-                }, { enableHighAccuracy: true });
-            }
-        }
+        function adjDist(v) { dist = Math.max(0, dist + v); }
 
-        function updateLoop() {
-            if (!missionActive) return;
+        function toggleSim() { isSim = !isSim; document.getElementById('sim-btn').innerText = isSim ? "SIMULADOR: ON" : "SIMULADOR: OFF"; }
 
-            let now = Date.now();
-            let elapsedSec = (now - startTime) / 1000;
+        function update() {
+            if (!mission) return;
+            if (isSim) dist += 0.0015; // Simulação estável
 
-            // 1. CÁLCULO DA RAMPA (Pace Alvo Variável)
-            // Progresso de 0 a 1
-            let progress = Math.min(distance / mDist, 1);
+            let elapsed = (Date.now() - startT) / 1000;
+            let progress = Math.min(dist / mDist, 1);
             
-            // Fator de rampa: começa em (1 + mRampa) e termina em (1 - mRampa)
-            let currentTargetPaceFactor = (1 + mRampa) - (2 * mRampa * progress);
-            let currentTargetPaceSec = mPaceSec * currentTargetPaceFactor;
+            // Lógica de Rampa
+            let factor = (1 + mRampa) - (2 * mRampa * progress);
+            let targetLive = mPace * factor;
+            let idealTime = dist * (mPace * (1 + mRampa - (mRampa * progress / 2)));
+            let delta = elapsed - idealTime;
 
-            // 2. TEMPO IDEAL (Onde eu deveria estar agora)
-            // Integração simples da rampa: TempoIdeal = Distancia * PaceMedioNaquelePonto
-            // Para simplificar: Tempo acumulado ideal
-            let avgPaceSoFar = mPaceSec * (1 + mRampa - (mRampa * progress));
-            let idealTimeSec = distance * avgPaceSoFar;
-
-            // 3. DELTA
-            let delta = elapsedSec - idealTimeSec;
-
-            // Atualizar UI
-            document.getElementById('live-time').innerText = secToPace(elapsedSec);
-            document.getElementById('live-dist').innerText = distance.toFixed(2);
-            document.getElementById('progress-bar-fill').style.width = (progress * 100) + "%";
-            document.getElementById('target-pace-live').innerText = `ALVO ATUAL: ${secToPace(currentTargetPaceSec)}`;
+            // UI
+            document.getElementById('vDist').innerText = dist.toFixed(2);
+            document.getElementById('vTime').innerText = Math.floor(elapsed/60).toString().padStart(2,'0') + ":" + Math.floor(elapsed%60).toString().padStart(2,'0');
+            document.getElementById('target-live').innerText = "ALVO: " + Math.floor(targetLive/60) + ":" + Math.floor(targetLive%60).toString().padStart(2,'0');
             
-            let deltaEl = document.getElementById('delta-value');
-            deltaEl.innerText = (delta > 0 ? "+" : "") + delta.toFixed(1);
-            deltaEl.style.color = delta > 5 ? 'var(--danger)' : 'var(--neon-yellow)';
-
-            // Pace Atual
-            let currentActualPace = distance > 0 ? (elapsedSec / distance) : 0;
-            document.getElementById('live-pace').innerText = secToPace(currentActualPace);
-
-            requestAnimationFrame(updateLoop);
-        }
-
-        // SIMULADOR PARA TESTE EM CASA
-        function toggleSimulation() {
-            isSimulating = !isSimulating;
-            document.getElementById('sim-toggle').innerText = isSimulating ? "MODO SIMULAÇÃO: ON" : "MODO SIMULAÇÃO: OFF";
+            let dVal = document.getElementById('delta-value');
+            dVal.innerText = (delta > 0 ? "+" : "") + delta.toFixed(1);
             
-            if (isSimulating) {
-                simInterval = setInterval(() => {
-                    distance += 0.005; // Simula 5 metros a cada 1s
-                }, 1000);
-            } else {
-                clearInterval(simInterval);
-            }
+            // Efeito de Pulso se estiver atrasado > 2 segundos
+            if(delta > 2) document.getElementById('main-body').classList.add('critical-delay');
+            else document.getElementById('main-body').classList.remove('critical-delay');
+
+            requestAnimationFrame(update);
         }
     </script>
 </body>
